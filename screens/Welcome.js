@@ -1,31 +1,59 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, AsyncStorage} from 'react-native';
 
-export default function Welcome({navigation}) {
-    return (
-        <View style={styles.container}>
+export default class Welcome extends React.Component {
+    constructor(props) {
+        super(props)
+    }
 
-            <Image style={styles.welcomeImage} source={require('../assets/MusicMix_logo.png')} />
+    async Login() {
+        const date = await AsyncStorage.getItem('Date');
+        const userDate = +new Date(parseInt(date));
+        const now = +new Date();
+    
+        if (date !== null) {
+    
+          const dateAge = Math.round((now - userDate) / (1000 * 60));
+          const tooOld = dateAge >= 480;
+    
+          if (tooOld) {
+            await AsyncStorage.clear();
+            this.props.navigation.navigate('Login');
+          } else {
+            this.props.navigation.navigate('Home');
+          }
+        } else {
+            this.props.navigation.navigate('Login');
+        }
+    }
 
-            <View style={styles.catchPhraseContainer}>
-                <Text style={styles.catchPhraseText}>Music for everyone</Text>
-                <Text style={styles.catchPhraseText}>Tons of different music for every vibe</Text>
+
+    render() {
+        return (
+            <View style={styles.container}>
+    
+                <Image style={styles.welcomeImage} source={require('../assets/MusicMix_logo.png')} />
+    
+                <View style={styles.catchPhraseContainer}>
+                    <Text style={styles.catchPhraseText}>Music for everyone</Text>
+                    <Text style={styles.catchPhraseText}>Tons of different music for every vibe</Text>
+                </View>
+    
+                <View style={styles.navigationContainer}>
+                    <TouchableOpacity style={styles.naviationToLogin} onPress={() => this.Login()}>
+                        <Text style={styles.navigatonTextLogin}>Login</Text>
+                    </TouchableOpacity>
+    
+                    <TouchableOpacity onPress={() => this.props.navigation.navigate('Register')}>
+                        <Text style={styles.navigatonTextSignup}>Sign up</Text>
+                    </TouchableOpacity>
+    
+                </View>
+                
+    
             </View>
-
-            <View style={styles.navigationContainer}>
-                <TouchableOpacity style={styles.naviationToLogin} onPress={() => navigation.navigate('Login')}>
-                    <Text style={styles.navigatonTextLogin}>Login</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                    <Text style={styles.navigatonTextSignup}>Sign up</Text>
-                </TouchableOpacity>
-
-            </View>
-            
-
-        </View>
-    );
+        );
+    }
 }
 
 const styles = StyleSheet.create({
