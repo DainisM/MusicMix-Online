@@ -1,47 +1,55 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableHighlight} from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
+import { View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import HomeStack from '../components/routes/homeStack';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default class Home extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            id: '',
-            token: '',
-            username: '',
-            date: '',
-        }
-    }
 
-    async componentDidMount() {
-        this.setState({
-            id: await AsyncStorage.getItem('ID'),
-            token: await AsyncStorage.getItem('Token'),
-            username: await AsyncStorage.getItem('Username'),
-            date: await AsyncStorage.getItem('Date')
-        })
-    }
-    
-    async logout() {
-        await AsyncStorage.clear();
-        this.props.navigation.replace('Welcome');
+        }
     }
 
     render() {
         return (
             <View style={styles.container}>
-                <Text>Home screen</Text>
                 
-                <Text>ID - {this.state.id}</Text>
-                <Text>Token - {this.state.token}</Text>
-                <Text>Username - {this.state.username}</Text>
-                <Text>Date - {this.state.date}</Text>
+                <HomeStack />
 
+                <View style={styles.homeNavigationContainer}>
+                    <TouchableOpacity onPress={() => this.props.navigation.navigate('Browse')}  style={[styles.homeNavigationIcons]}>
+                        <Icon
+                            name='home' 
+                            backgroundColor={'inherit'} 
+                            color={'darkcyan'} 
+                            size={40}
+                            style={{padding: 5}}
+                        />
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity onPress={() => this.props.navigation.navigate('Search')}  style={styles.homeNavigationIcons}>
+                        <Icon
+                            name='search' 
+                            backgroundColor={'inherit'} 
+                            color={'darkcyan'} 
+                            size={40}
+                            style={{padding: 5}}
+                        />
+                    </TouchableOpacity>
 
-                <TouchableHighlight onPress={() => this.logout()}>
-                    <Text>Logout</Text>
-                </TouchableHighlight>
+                    <TouchableOpacity onPress={() => this.props.navigation.navigate('Library')} style={styles.homeNavigationIcons}>
+                        <Icon                            
+                            name='list' 
+                            backgroundColor={'inherit'} 
+                            color={'darkcyan'} 
+                            size={40}
+                            style={{padding: 5}}
+                        />
+                    </TouchableOpacity>
+                </View>
+
             </View>
         );
     }
@@ -50,5 +58,21 @@ export default class Home extends React.Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#002930',
     },
+    homeNavigationContainer: {
+        height: '10%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: '10%',
+        paddingVertical: '3%',
+        borderTopWidth: 3,
+        borderTopColor: 'darkcyan',
+    },
+    homeNavigationIcons: {
+        width: 60, 
+        borderBottomColor: 'cyan', 
+        alignSelf: 'center',
+        alignItems: 'center',
+    }
 });
