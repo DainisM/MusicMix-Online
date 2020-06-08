@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, AsyncStorage, TouchableHighlight} from 'react-native';
+import { View, Text, StyleSheet, TouchableHighlight} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export default class Home extends React.Component {
     constructor(props) {

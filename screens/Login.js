@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, AsyncStorage} from 'react-native';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export default class Login extends React.Component {
     constructor(props) {
@@ -39,7 +40,6 @@ export default class Login extends React.Component {
                 if (response.ok) {
                     response.json().then(async (json) => {
                         this.setState({loginError: false})
-                        console.log(json);
                         await AsyncStorage.setItem('ID', json.id);
                         await AsyncStorage.setItem('Token', json.token);
                         await AsyncStorage.setItem('Username', json.username);

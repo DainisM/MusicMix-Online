@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, AsyncStorage} from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export default class Welcome extends React.Component {
     constructor(props) {
