@@ -7,6 +7,7 @@ import Welcome from './screens/Welcome';
 import Register from './screens/Register';
 import Login from './screens/Login';
 import Home from './screens/Home';
+import Profile from './screens/Profile';
 
 export default function App() {
 
@@ -30,6 +31,10 @@ export default function App() {
         <Stack.Screen 
           name="Home"
           component={Home}
+        />
+        <Stack.Screen 
+          name="Profile"
+          component={Profile}
         />
       </Stack.Navigator>
     </NavigationContainer>

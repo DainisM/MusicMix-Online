@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-community/async-storage';
+import {Picker} from '@react-native-community/picker';
 
 var deviceWidth = Dimensions.get('window').width;
 var deviceHeigh = Dimensions.get('window').height;
@@ -42,19 +43,41 @@ export default class Browse extends React.Component {
         this.setState({username: await AsyncStorage.getItem('Username')})
     }
 
+    dropdown = async (value) => {
+
+        if (value === 'profile') {
+            this.props.navigation.navigate('Profile');
+        }
+
+        if(value === 'logout') {
+            await AsyncStorage.clear();
+            this.props.navigation.replace('Welcome')
+        }
+    } 
+
     render() {
         return (
             <View style={styles.container}>
                 
-                <TouchableOpacity style={styles.profileLinkContainer}>
+                <View style={styles.profileLinkContainer}>
                     <Icon 
                         name='user'
                         size={30}
                         color={'#00758a'}
                     />
-                    <Text style={styles.profileLinkUsername}>{this.state.username}USERNAME00</Text>
-                </TouchableOpacity>
 
+                    <Picker
+                        mode={'dropdown'}
+                        style={{ height: 30, width: 180, backgroundColor: 'transparent', alignSelf: 'center'}}
+                        onValueChange={(itemValue, itemIndex) => this.dropdown(itemValue)}
+                    >
+                        <Picker.Item label='USERNAME00' value='0' color='darkcyan'/>
+                        <Picker.Item label='Profile' value='profile'/>
+                        <Picker.Item label='Logout' value='logout'/>
+                    </Picker>
+
+                </View>
+                
                 <View style={styles.browseContainers}>
                     <Text style={styles.browseText}>Featured</Text>
                     <FlatList
@@ -122,6 +145,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         paddingVertical: '3%',
         height: '10%',
+        // marginRight: 5,
     },
     profileLinkUsername: {
         color: '#00758a',
