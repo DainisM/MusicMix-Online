@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import CreatePlaylist from '../components/library/createPlaylist';
 
 var deviceWidth = Dimensions.get('window').width;
 var deviceHeigh = Dimensions.get('window').height;
@@ -10,6 +11,7 @@ export default class Library extends React.Component {
         super(props);
 
         this.state = {
+            modalVisible: false,
             playlists: [
                 {name: 'My playlist', image: require('../assets/Playlist.png')},
                 {name: 'New music', image: require('../assets/Playlist.png')},
@@ -18,12 +20,27 @@ export default class Library extends React.Component {
         }
     }
 
+    closeModal = () => {
+        this.setState({modalVisible: false});
+    }
+
+    openModal = () => {
+        this.setState({modalVisible: true});
+    }
+
     render() {
         return (
             <View style={styles.container}>
+                
+                <CreatePlaylist 
+                    ModalVisible={this.state.modalVisible}
+                    closeModal={this.closeModal}
+                />
+
+
                 <Text style={styles.playlistHeader}>Your playlists</Text>
 
-                <TouchableOpacity style={styles.newPlaylistContainer}>
+                <TouchableOpacity style={styles.newPlaylistContainer} onPress={this.openModal}>
                     <Icon 
                         name='plus'
                         size={33}
