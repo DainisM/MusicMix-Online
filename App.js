@@ -8,6 +8,7 @@ import Register from './screens/Register';
 import Login from './screens/Login';
 import Home from './screens/Home';
 import Profile from './screens/Profile';
+import Playlist from './screens/Playlist';
 
 export default function App() {
 
@@ -35,6 +36,10 @@ export default function App() {
         <Stack.Screen 
           name="Profile"
           component={Profile}
+        />
+        <Stack.Screen 
+          name="Playlist"
+          component={Playlist}
         />
       </Stack.Navigator>
     </NavigationContainer>

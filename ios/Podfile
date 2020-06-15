@@ -81,6 +81,10 @@ target 'OnlineApp' do
 
   pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
 
+  pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
+
+  pod 'react-native-track-player', :path => '../node_modules/react-native-track-player'
+
   target 'OnlineAppTests' do
     inherit! :complete
     # Pods for testing

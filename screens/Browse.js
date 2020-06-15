@@ -14,27 +14,27 @@ export default class Browse extends React.Component {
         this.state = {
             username: '',
             genres: [
-                {name: 'Rock', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Pop', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Metal', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Alternative', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Electro', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'House', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Hip Hop', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Rap', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Reggea', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
+                {id: 1234545454, name: 'Rock', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
+                {id: 1234545484, name: 'Pop', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
+                {id: 1234545419, name: 'Metal', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
+                {id: 1234545413, name: 'Alternative', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
+                {id: 1234545464, name: 'Electro', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
+                {id: 1234545487, name: 'House', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
+                {id: 1234545458, name: 'Hip Hop', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
+                {id: 1234545497, name: 'Rap', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
+                {id: 1234545444, name: 'Reggea', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
             ],
             moods: [
-                {name: 'Chill', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Motivation', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Workout', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Car', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Party', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
+                {id: 1234545984, name: 'Chill', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
+                {id: 1234545944, name: 'Motivation', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
+                {id: 1234545464, name: 'Workout', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
+                {id: 1234545914, name: 'Car', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
+                {id: 1234545244, name: 'Party', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
             ],
             tops: [
-                {name: 'Newest tracks', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Top of last 10 years', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {name: 'Editors to 15', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
+                {id: 1234545816, name: 'Newest tracks', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
+                {id: 1234545759, name: 'Top of last 10 years', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
+                {id: 1234545555, name: 'Editors top 15', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
             ]
         }
     }
@@ -85,9 +85,9 @@ export default class Browse extends React.Component {
                         showsHorizontalScrollIndicator={false}
                         pagingEnabled={true}
                         data={this.state.tops}
-                        keyExtractor={item => item.name}
+                        keyExtractor={item => item.id}
                         renderItem={({item}) => 
-                        <TouchableOpacity style={styles.browseTouchables} key={item.name}>
+                        <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Featured'})}>
                             <Image style={styles.browseImages} source={require('../assets/Music.png')} />
                             <Text style={styles.browseItemNames}>{item.name}</Text>
                         </TouchableOpacity>} 
@@ -103,9 +103,9 @@ export default class Browse extends React.Component {
                         scrollEventThrottle={200}
                         decelerationRate="fast"
                         data={this.state.genres}
-                        keyExtractor={item => item.name}
+                        keyExtractor={item => item.id}
                         renderItem={({item}) => 
-                        <TouchableOpacity style={styles.browseTouchables} key={item.name}>
+                        <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Genres'})}>
                             <Image style={styles.browseImages} source={require('../assets/Music.png')} />
                             <Text style={styles.browseItemNames}>{item.name}</Text>
                         </TouchableOpacity>} 
@@ -121,9 +121,9 @@ export default class Browse extends React.Component {
                         scrollEventThrottle={200}
                         decelerationRate="fast"
                         data={this.state.moods}
-                        keyExtractor={item => item.name}
+                        keyExtractor={item => item.id}
                         renderItem={({item}) => 
-                        <TouchableOpacity style={styles.browseTouchables} key={item.name}>
+                        <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Moods'})}>
                             <Image style={styles.browseImages} source={require('../assets/Music.png')} />
                             <Text style={styles.browseItemNames}>{item.name}</Text>
                         </TouchableOpacity>} 

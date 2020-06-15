@@ -1,5 +1,4 @@
 import React from 'react';
-import { View, Text } from 'react-native';
 import { createBottomTabNavigator  } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Browse from '../../screens/Browse';
@@ -53,5 +52,3 @@ export default function HomeStack() {
             </Tab.Navigator>
     )
 }
-
-// screenOptions={{headerShown: false}}
