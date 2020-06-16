@@ -1,16 +1,46 @@
 import React from 'react';
-import { View, Text, StyleSheet} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from 'axios';
 
 export default class SeeProfile extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            profileInfo: {
-                email: 'usermail12@mail.com', username: 'username00',
-                birthday: 'Thu Nov 27 1997', gender: 'male'
-            },
+            email: '', 
+            username: '',
+            birthday: '', 
+            gender: ''
         }
+    }
+
+    //Method that fetches user data on render
+    async componentDidMount() {
+        //Variable that holds JWT token found in storage
+        var token = await AsyncStorage.getItem('Token');
+        //Variable that holds user id found in storage
+        var userID = await AsyncStorage.getItem('ID');
+        //Variable  that holds fetch link appended with user id
+        var url = "http://api.music-mix.live/users/" + userID+""
+        
+        //Fetching data
+        axios
+            .get(url, { headers: { Authorization: 'Bearer '+token } })
+            .then(response => response.data)
+            .then(data => {
+                //If response ok then set data into state
+                this.setState({
+                    username: data.username,
+                    email: data.email,
+                    birthday: data.details.birthday,
+                    gender: data.details.gender
+                  });
+            })
+            //else log error
+            .catch(error => {
+                console.log("error " + error);
+            });
     }
 
     render() {
@@ -21,17 +51,17 @@ export default class SeeProfile extends React.Component {
 
                     <View style={styles.profileInfoRow}>
                         <Text style={styles.profileInfoLabel}>Email</Text>
-                        <Text style={styles.profileInfoText}>{this.state.profileInfo.email}</Text>
+                        <Text style={styles.profileInfoText}>{this.state.email}</Text>
                     </View>
 
                     <View style={styles.profileInfoRow}>
                         <Text style={styles.profileInfoLabel}>Username</Text>
-                        <Text style={styles.profileInfoText}>{this.state.profileInfo.username}</Text>
+                        <Text style={styles.profileInfoText}>{this.state.username}</Text>
                     </View>
 
                     <View style={styles.profileInfoRow}>
                         <Text style={styles.profileInfoLabel}>Birthday</Text>
-                        <Text style={styles.profileInfoText}>{this.state.profileInfo.birthday}</Text>
+                        <Text style={styles.profileInfoText}>{this.state.birthday}</Text>
                     </View>
 
                     <View style={styles.profileInfoRow}>
@@ -42,7 +72,7 @@ export default class SeeProfile extends React.Component {
                                 fontSize: 18, width: '70%', 
                                 marginLeft: 20,
                             }}
-                        >{this.state.profileInfo.gender}</Text>
+                        >{this.state.gender}</Text>
                     </View>
 
                 </View>

@@ -8,22 +8,33 @@ export default class Welcome extends React.Component {
     }
 
     async Login() {
+        //Variable that holds timestamp retrieved from storage
         const date = await AsyncStorage.getItem('Date');
+        //parsing timestamp to datetime
         const userDate = +new Date(parseInt(date));
+        //Getting datetime now
         const now = +new Date();
     
+        // If variable from storage is not empty do this logic
         if (date !== null) {
     
-          const dateAge = Math.round((now - userDate) / (1000 * 60));
-          const tooOld = dateAge >= 480;
-    
-          if (tooOld) {
-            await AsyncStorage.clear();
-            this.props.navigation.navigate('Login');
-          } else {
-            this.props.navigation.navigate('Home');
-          }
-        } else {
+            //Using math function to get datetimestamp to minutes
+			const dateAge = Math.round((now - userDate) / (1000 * 60));
+			//Comparing it (must not be bigger that 480 minutes or 8 h )
+            const tooOld = dateAge >= 480;
+		
+			//If it is bigger that 480 minutes clear storage and go to login page
+            if (tooOld) {
+                await AsyncStorage.clear();
+				this.props.navigation.navigate('Login');
+			} 
+			//If its under 8 h then go directly to home page
+			else {
+                this.props.navigation.replace('Home');
+            }
+        } 
+        //Else just go to login page
+        else {
             this.props.navigation.navigate('Login');
         }
     }

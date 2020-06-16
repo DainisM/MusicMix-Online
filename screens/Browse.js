@@ -71,7 +71,7 @@ export default class Browse extends React.Component {
                         style={{ height: 30, width: 180, backgroundColor: 'transparent', alignSelf: 'center'}}
                         onValueChange={(itemValue, itemIndex) => this.dropdown(itemValue)}
                     >
-                        <Picker.Item label='USERNAME00' value='0' color='darkcyan'/>
+                        <Picker.Item label={this.state.username} value='0' color='darkcyan'/>
                         <Picker.Item label='Profile' value='profile'/>
                         <Picker.Item label='Logout' value='logout'/>
                     </Picker>
@@ -85,7 +85,7 @@ export default class Browse extends React.Component {
                         showsHorizontalScrollIndicator={false}
                         pagingEnabled={true}
                         data={this.state.tops}
-                        keyExtractor={item => item.id}
+                        keyExtractor={item => item.id.toString()}
                         renderItem={({item}) => 
                         <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Featured'})}>
                             <Image style={styles.browseImages} source={require('../assets/Music.png')} />
@@ -103,7 +103,7 @@ export default class Browse extends React.Component {
                         scrollEventThrottle={200}
                         decelerationRate="fast"
                         data={this.state.genres}
-                        keyExtractor={item => item.id}
+                        keyExtractor={item => item.id.toString()}
                         renderItem={({item}) => 
                         <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Genres'})}>
                             <Image style={styles.browseImages} source={require('../assets/Music.png')} />
@@ -121,7 +121,7 @@ export default class Browse extends React.Component {
                         scrollEventThrottle={200}
                         decelerationRate="fast"
                         data={this.state.moods}
-                        keyExtractor={item => item.id}
+                        keyExtractor={item => item.id.toString()}
                         renderItem={({item}) => 
                         <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Moods'})}>
                             <Image style={styles.browseImages} source={require('../assets/Music.png')} />
@@ -142,10 +142,10 @@ const styles = StyleSheet.create({
     },
     profileLinkContainer: {
         flexDirection: 'row',
-        justifyContent: 'flex-end',
+        justifyContent: 'flex-start',
         paddingVertical: '3%',
+        marginHorizontal: '5%',
         height: '10%',
-        // marginRight: 5,
     },
     profileLinkUsername: {
         color: '#00758a',

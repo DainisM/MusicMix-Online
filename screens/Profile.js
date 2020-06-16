@@ -13,6 +13,7 @@ export default class Profile extends React.Component {
         }
     }
 
+    //Method used to set username in state from storage
     async componentDidMount() {
         this.setState({username: await AsyncStorage.getItem('Username')})
     }
@@ -29,7 +30,7 @@ export default class Profile extends React.Component {
                         style={{margin: '3%'}}
                         onPress={() => this.props.navigation.popToTop()}
                     />
-                    <Text style={styles.profileHeaderText}>{this.state.username}USERNAME00</Text>
+                    <Text style={styles.profileHeaderText}>{this.state.username}</Text>
                 </View>
 
                 <ProfileStack />

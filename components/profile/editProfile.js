@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard} from 'react-native';
 import {Picker} from '@react-native-community/picker';
 import DatePicker from 'react-native-datepicker';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
+import axios from 'axios';
 
 export default class EditProfile extends React.Component {
     constructor(props) {
@@ -15,28 +17,52 @@ export default class EditProfile extends React.Component {
             gender: '',
             emailError: '',
             usernameError: '',
+            editMsg: '',
         }
     }
 
+    //Method used to add 2 listeners when component mounts
     componentDidMount() {
         this.props.navigation.addListener('focus', this._onFocus);
         this.props.navigation.addListener('blur', this._onBlur);
     }
     
+    //method used to remove listeners when component unmounts
     componentWillUnmount() {
         this.props.navigation.removeListener('blur', this._onBlur);
         this.props.navigation.removeListener('focus', this._onFocus);
     }
 
-    _onFocus = () => {
-        this.setState({
-            email: 'usermail12@mail.com', 
-            username: 'username00',
-            birthday: moment('Thu Nov 27 1997').format('YYYY-MM-DD'),
-            gender: 'male',
-        })
+    //Listener method fired up when tab is focused
+    _onFocus = async () => {
+
+        //Variable that holds JWT token found in storage
+        var token = await AsyncStorage.getItem('Token');
+        //Variable that holds user id found in storage
+        var userID = await AsyncStorage.getItem('ID');
+        //Variable  that holds fetch link appended with user id
+        var url = "http://api.music-mix.live/users/" + userID+""
+        
+        //Fetching data
+        axios
+            .get(url, { headers: { Authorization: 'Bearer '+token }, },)
+            .then(response => response.data)
+            .then(data => {
+                //If response ok then set data into state
+                this.setState({
+                    username: data.username,
+                    email: data.email,
+                    gender: data.details.gender,
+                    birthday: moment(data.details.birthday).format('YYYY-MM-DD')
+                  });
+            })
+            //else log error
+            .catch(error => {
+                console.log("error " + error);
+            });
     }
 
+    //Method fired up when users tabs away
     _onBlur = () => {
         this.setState({
             email: '', 
@@ -48,18 +74,22 @@ export default class EditProfile extends React.Component {
         })
     }
 
+    //Method used to validate user input
     validate = () => {
         let emailError = "";
         let usernameError = "";
 
+        //If user unput for email doesnt match regex string this error is set in variable
         if (!this.state.email || !this.state.email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
             emailError = "Invalid email";
         }
 
+        //If user input for username is less than 3 or more than 10 length this error is set
         if (this.state.username.length > 10 || this.state.username.length < 3) {
             usernameError = "Username must be between 3 and 10 characters long";
         }
 
+        //If there is some errors set them in state and retur false
         if (
             emailError ||
             usernameError
@@ -74,14 +104,46 @@ export default class EditProfile extends React.Component {
           return true;
     }
 
+    //Method used to edit profile data 
     async editProfile () {
+        //Initializing validate method in this variable
         const isValid = this.validate();
 
+        //Checking if it is valid (if true)
         if (isValid) {
-            console.log('Email: '+this.state.email);
-            console.log('Username: '+this.state.username);
-            console.log('Gender: '+this.state.gender);
-            console.log('Birthday: '+this.state.birthday);
+
+            //Variable that holds JWT token found in storage
+            var token = await AsyncStorage.getItem('Token');
+            //Variable that holds user id found in storage
+            var userID = await AsyncStorage.getItem('ID');
+            var url = "http://api.music-mix.live/users/" + userID+""
+
+            //Patch user data
+            axios
+            .patch(url, 
+                {
+                    email: this.state.email,
+                    username: this.state.username,
+                    gender: this.state.gender,
+                    birthday: this.state.birthday
+                },  { headers: { Authorization: 'Bearer '+token }, },)
+            .then(async response => {
+                //If response ok then do following
+                if (response.status === 200) {
+                    // update storage username
+                    await AsyncStorage.setItem('Username', this.state.username)
+                    //set editMsg to "...updated successfully"
+                    this.setState({ editMsg: "Profile updated successfully!" });
+                    //After 1 second redirect to home page
+                    setTimeout(() => {
+                        this.props.navigation.replace('Home');
+                    }, 1000)
+                }
+            })
+            //else log error
+            .catch(error => {
+                console.log("error " + error);
+            });
         }
     }
 
@@ -163,6 +225,10 @@ export default class EditProfile extends React.Component {
                         <Text style={styles.profileEditButtonText}>Update profile information</Text>
                     </TouchableOpacity>
 
+                    {this.state.editMsg !== '' ? (
+                        <Text style={styles.successMsg}>{this.state.editMsg}</Text>
+                    ) : (null)}
+
                 </View>
             </TouchableWithoutFeedback>
         );
@@ -204,6 +270,13 @@ const styles = StyleSheet.create({
     ErrorText: {
         alignSelf: 'center',
         color: 'darkred',
+    },
+    successMsg: {
+        marginVertical: '5%',
+        fontWeight: 'bold',
+        fontSize: 16,
+        alignSelf: 'center',
+        color: 'green',
     },
     profileEditButton: {
         backgroundColor: 'darkcyan',
