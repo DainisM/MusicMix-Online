@@ -72,24 +72,23 @@ export default class ChangePassword extends React.Component {
             var token = await AsyncStorage.getItem('Token');
             //Variable that holds user id found in storage
             var userID = await AsyncStorage.getItem('ID');
-            var url = "https://music-mix.live/users/pass/" + userID+""
+            var url = "http://api.music-mix.live/users/pass/" + userID+""
 
             //Patch user data
-            axios
+            await axios
             .patch(url, 
                 { password: this.state.newPassword },  
                 { headers: { Authorization: 'Bearer '+token }, },)
             .then(response => {
-
-                console.log(response);
                 //If response ok then do following
                 if (response.status === 200) {
                     //set successMsg to "...changed successfully"
-                    this.setState({ successMsg: "Password changed successfully!" });
+                    this.setState({ successMsg: "Password changed successfully!", newPassword: '',
+                    confPassword: '', });
                     //After 1 second set successMsg back to empty
                     setTimeout(() => {
                         this.setState({ successMsg: '' });
-                    }, 1000)
+                    }, 2000)
                 }
             })
             //else log error
