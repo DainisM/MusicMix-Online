@@ -122,9 +122,9 @@ export default class Browse extends React.Component {
                         showsHorizontalScrollIndicator={false}
                         pagingEnabled={true}
                         data={this.state.tops}
-                        keyExtractor={item => item.id}
+                        keyExtractor={item => item._id}
                         renderItem={({item}) => 
-                        <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Featured'})}>
+                        <TouchableOpacity style={styles.browseTouchables} onPress={() => this.props.navigation.navigate('Playlist', {id: item._id, name: item.name, image: item.links.image, from: 'Featured'})}>
                             <Image style={styles.browseImages} source={{uri: item.links.image}} />
                             <Text style={styles.browseItemNames}>{item.name}</Text>
                         </TouchableOpacity>} 
@@ -140,9 +140,9 @@ export default class Browse extends React.Component {
                         scrollEventThrottle={200}
                         decelerationRate="fast"
                         data={this.state.genres}
-                        keyExtractor={item => item.id}
+                        keyExtractor={item => item._id}
                         renderItem={({item}) => 
-                        <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Genres'})}>
+                        <TouchableOpacity style={styles.browseTouchables} onPress={() => this.props.navigation.navigate('Playlist', {id: item._id, name: item.name, image: item.links.image, from: 'Genres'})}>
                             <Image style={styles.browseImages} source={{uri: item.links.image}} />
                             <Text style={styles.browseItemNames}>{item.name}</Text>
                         </TouchableOpacity>} 
@@ -158,9 +158,9 @@ export default class Browse extends React.Component {
                         scrollEventThrottle={200}
                         decelerationRate="fast"
                         data={this.state.moods}
-                        keyExtractor={item => item.id}
+                        keyExtractor={item => item._id}
                         renderItem={({item}) => 
-                        <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Moods'})}>
+                        <TouchableOpacity style={styles.browseTouchables} onPress={() => this.props.navigation.navigate('Playlist', {id: item._id, name: item.name, image: item.links.image, from: 'Moods'})}>
                             <Image style={styles.browseImages} source={{uri: item.links.image}} />
                             <Text style={styles.browseItemNames}>{item.name}</Text>
                         </TouchableOpacity>} 

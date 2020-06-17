@@ -1,14 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, FlatList, Modal} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer, {usePlaybackState} from 'react-native-track-player';
+import Player from '../components/player';
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from 'axios';
 
 var deviceWidth = Dimensions.get('window').width;
 var deviceHeigh = Dimensions.get('window').height;
-
-const FeaturedURL = 'https://music-mix.live/browse/tops/';
-const GenreURL = 'https://music-mix.live/browse/genres/';
-const MoodsURL = 'https://music-mix.live/browse/moods/';
 
 export default class Library extends React.Component {
     constructor(props) {
@@ -20,54 +19,249 @@ export default class Library extends React.Component {
             id: this.props.route.params.id,
             name: this.props.route.params.name,
             url: '',
-            songs: [
-                {id: '123', artist: 'Morgenshtern', title: 'Caddilac', explicit: true, url: 'file:///storage/emulated/0/Download/Morgenshtern - Cadillac.mp3'},
-                {id: '132', artist: 'Timati', title: 'Havchik', explicit: false, url: 'file:///storage/emulated/0/Download/Timati - Havchik.mp3'},
-                {id: '213', artist: 'Filv', title: 'Balenciaga', explicit: false, url: 'file:///storage/emulated/0/Download/Filv - Balenciaga.mp3'},
-                {id: '321', artist: 'Audiosoulz', title: 'Dancefloor', explicit: false, url: 'file:///storage/emulated/0/Download/Audiosoulz - Dancefloor.mp3'},
-                {id: '231', artist: 'Amaranthe', title: '365', explicit: false, url: 'file:///storage/emulated/0/Download/Amaranthe - 365.mp3'},
-                {id: '312', artist: 'TRITIA', title: 'Wake', explicit: false, url: 'file:///storage/emulated/0/Download/TRITIA - Wake.mp3'},
-                {id: '412', artist: 'Amaranthe', title: 'Digital World', explicit: false, url: 'file:///storage/emulated/0/Download/Amaranthe - Digital World.mp3'}
-            ],
+            songs: [],
         }
     }
 
-    async componentDidMount() {
+    //Method used to add 2 listeners when component mounts
+    componentDidMount() {
+        this.props.navigation.addListener('focus', this._onFocus);
+        this.props.navigation.addListener('blur', this._onBlur);
+    }
+    
+    //method used to remove listeners when component unmounts
+    componentWillUnmount() {
+        this.props.navigation.removeListener('blur', this._onBlur);
+        this.props.navigation.removeListener('focus', this._onFocus);
+    }
+
+    //Listener method fired up when tab is focused
+    _onFocus = async () => {
+        //Variable that holds JWT token found in storage
+        var token = await AsyncStorage.getItem('Token');
+
         if (this.props.route.params.from == 'Featured') {
-            const url = FeaturedURL+this.props.route.params.id;
-            this.setState({url: url});
+            if (this.props.route.params.name !== 'Newest Tracks') {
+                //Fetching tops
+                await axios
+                .get('http://api.music-mix.live/browse/tops/'+this.props.route.params.id, 
+                    { headers: { 
+                        Authorization: 'Bearer '+token 
+                    }})
+                .then(res => {
+                    //Mapping data
+                    res.data.response.top[0].tracks.map((track) => {
+                        //if there is 2 artist in array then we set is together in 1 string
+                        let artistName = '';
+                        if (track.artist[1] != null) {
+                            artistName = track.artist[0] + ' & '+track.artist[1]
+                        } 
+                        //Or just set it as 1 string
+                        else {
+                            artistName = track.artist[0]
+                        }
+
+                        //Getting old array
+                        let oldArray = [...this.state.songs]
+                        
+                        //Appending 1. halv of link for song to other gotten from API (fail in API)
+                        let trackUrl = 'http://api.music-mix.live' +track.url.split('..')[1]
+
+                        //Pushing new object in array
+                        oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: trackUrl});
+
+                        //Setting array to state
+                        this.setState({songs: oldArray});
+                    })
+                })
+                //else log error
+                .catch(error => {
+                    console.log("error " + error);
+                });
+            } else {
+                await axios
+                .get(
+                    "http://api.music-mix.live/browse/newest/",
+                    {
+                    headers: { Authorization: 'Bearer '+token }
+                    }
+                )
+                .then(res => {
+                    res.data.tracks.map((track) => {
+                        //if there is 2 artist in array then we set is together in 1 string
+                        let artistName = '';
+                        if (track.artist[1] != null) {
+                            artistName = track.artist[0] + ' & '+track.artist[1]
+                        } else {
+                            artistName = track.artist[0]
+                        }
+
+                        //Getting old array
+                        let oldArray = [...this.state.songs]
+
+                        //Pushing new object in array
+                        oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: track.url});
+
+                        //Setting array to state
+                        this.setState({songs: oldArray});
+                    })
+                
+                })
+                .catch(error => {
+                    console.log("error " + error);
+                });
+            }
         }
         if (this.props.route.params.from == 'Genres') {
-            const url = GenreURL+this.props.route.params.name.toLowerCase();
-            this.setState({url: url});
+           //Fetching genres
+           await axios
+           .get('http://api.music-mix.live/browse/genres/tracks/'+this.props.route.params.name.toLowerCase(), 
+               { headers: { 
+                   Authorization: 'Bearer '+token 
+               }})
+           .then(res => {
+
+               res.data.tracks.map((track) => {
+                   //if there is 2 artist in array then we set is together in 1 string
+                   let artistName = '';
+                   if (track.artist[1] != null) {
+                       artistName = track.artist[0] + ' & '+track.artist[1]
+                   } else {
+                       artistName = track.artist[0]
+                   }
+
+                   //Getting old array
+                   let oldArray = [...this.state.songs]
+                   
+                   //Pushing new object in array
+                   oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: track.url});
+
+                   //Setting array to state
+                   this.setState({songs: oldArray});
+               })
+            })
         }
         if (this.props.route.params.from == 'Moods') {
-            const url = MoodsURL+this.props.route.params.id;
-            this.setState({url: url});
+            //Fetching mooods
+            await axios
+            .get('http://api.music-mix.live/browse/moods/'+this.props.route.params.id, 
+                { headers: { 
+                    Authorization: 'Bearer '+token 
+                }})
+            .then(res => {
+                res.data.response.playlist[0].tracks.map((track) => {
+                    //if there is 2 artist in array then we set is together in 1 string
+                    let artistName = '';
+                    if (track.artist[1] != null) {
+                        artistName = track.artist[0] + ' & '+track.artist[1]
+                    } else {
+                        artistName = track.artist[0]
+                    }
+
+                    //Getting old array
+                    let oldArray = [...this.state.songs]
+                    
+                    //Appending 1. halv of link for song to other gotten from API (fail in API)
+                    let trackUrl = 'http://api.music-mix.live' +track.url.split('..')[1]
+
+                    //Pushing new object in array
+                    oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: trackUrl});
+
+                    //Setting array to state
+                    this.setState({songs: oldArray});
+                })
+            })
+            //else log error
+            .catch(error => {
+                console.log("error " + error);
+            });
+        }
+        this.setup();
+    }
+
+    //Method fired up when users tabs away
+    _onBlur = () => {
+        this.setState({songs: []});
+        TrackPlayer.reset();
+    }
+
+
+    async setup() {
+        await TrackPlayer.setupPlayer({}).then(() => {
+            TrackPlayer.add(this.state.songs)
+        });
+        await TrackPlayer.updateOptions({
+            stopWithApp: true,
+            capabilities: [
+                TrackPlayer.CAPABILITY_PLAY,
+                TrackPlayer.CAPABILITY_PAUSE,
+                TrackPlayer.CAPABILITY_SKIP_TO_NEXT,
+                TrackPlayer.CAPABILITY_SKIP_TO_PREVIOUS,
+            ],
+            compactCapabilities: [
+                TrackPlayer.CAPABILITY_PLAY,
+                TrackPlayer.CAPABILITY_PAUSE,
+            ]
+        });
+    }
+
+    //Method used to toggle between play and pause
+    async togglePlayback() {
+        //Getting current state
+        const currentState = TrackPlayer.getState();
+        //Getting current track
+        const currentTrack = await TrackPlayer.getCurrentTrack();
+        //If there is no track then initialize it from state and start playing
+        if (currentTrack == null) {
+          await TrackPlayer.reset();
+          await TrackPlayer.add(this.state.songs);
+          await TrackPlayer.play();
+        } else {
+        //If state is paused them toggle play otherwise toggle pause
+          if (currentState === TrackPlayer.STATE_PAUSED) {
+            await TrackPlayer.play();
+          } else {
+            await TrackPlayer.pause();
+          }
         }
     }
 
-    // isPlaying = async () => {
-    //     const currentState = await TrackPlayer.getState()
-    //     return currentState === TrackPlayer.STATE_PLAYING
-    // }
+    //Method used to get and represend different playback states
+    getStateName = () => {
+        const state = usePlaybackState();
 
-    // togglePlay = async () => {
-    //     const isPlaying = await this.isPlaying()
+        switch (state) {
+          case TrackPlayer.STATE_NONE:
+            return "None";
+          case TrackPlayer.STATE_PLAYING:
+            return "Playing";
+          case TrackPlayer.STATE_PAUSED:
+            return "Paused";
+          case TrackPlayer.STATE_STOPPED:
+            return "Stopped";
+          case TrackPlayer.STATE_BUFFERING:
+            return "Buffering";
+        }
+    }
+      
+    //Method used to skip to next song in array
+    async skipToNext() {
+        try {
+          await TrackPlayer.skipToNext();
+        } catch (_) {}
+    }
+      
+    //Method used to skip to previous track in array
+    async skipToPrevious() {
+        try {
+          await TrackPlayer.skipToPrevious();
+        } catch (_) {}
+    }
 
-    //     if (isPlaying) {
-    //         return TrackPlayer.pause(), this.setState({isPlaying: false});
-    //     } else {
-    //         return TrackPlayer.play(), this.setState({isPlaying: true});
-    //     }
-    // }
-
-    // next = () => TrackPlayer.skipToNext();
-
-    // previous = () => TrackPlayer.skipToPrevious();
-
+    //On click skips to song and start playing it by id and shows bottom "modal"
     openTrack(id) {
-        // TrackPlayer.skip(id);
+        TrackPlayer.skip(id);
+        TrackPlayer.play();
         this.setState({modalVisible: true})
     }
 
@@ -83,8 +277,8 @@ export default class Library extends React.Component {
                 </TouchableOpacity>
 
                 <View>
-                    <Image style={styles.image} source={require('../assets/Playlist.png')}/>
-                    <Text style={styles.headerText}>{this.state.name}</Text>                   
+                    <Image style={styles.image} source={{uri: this.props.route.params.image}}/>
+                    <Text style={styles.headerText}>{this.state.name}</Text>                 
                 </View>
 
                 <FlatList
@@ -92,9 +286,9 @@ export default class Library extends React.Component {
                     data={this.state.songs}
                     keyExtractor={item => item.id}
                     renderItem={({item}) => 
-                    <View style={styles.songContainer}>
+                    <View style={styles.songContainer} key={item.id}>
 
-                        <TouchableOpacity style={styles.songClickable} onPress={() => this.openTrack(item.id)}>
+                        <TouchableOpacity style={styles.songClickable}  onPress={() => this.openTrack(item.id)}>
                             <Icon 
                                 style={{width: '10%', marginLeft: '2%'}}
                                 name="music"
@@ -103,12 +297,8 @@ export default class Library extends React.Component {
                                     
                             <View style={{flexDirection: 'column', width: '60%'}}>
                                 <Text style={{fontWeight: 'bold'}}>{item.title}</Text>
-                                {/* {item.artist.length > 1 ? (
-                                    <Text>{item.artist[0]} & {item.artist[1]}</Text>
-                                ) : (
-                                    <Text>{item.artist}</Text>
-                                )} */}
                                 <Text>{item.artist}</Text>
+                                
                             </View>
                                         
                             {item.explicit ? (
@@ -130,42 +320,15 @@ export default class Library extends React.Component {
                 />
 
 
-                <View style={this.state.modalVisible ? ({display: 'flex', height: 100}) : ({display: 'none'})}>
-                    
-                    <View>
-                        <TouchableOpacity onPress={this.previous}>
-                            <Icon 
-                                    name="backward"
-                                    size={20}
-                            />
-                        </TouchableOpacity>
+                <View style={this.state.modalVisible ? ({display: 'flex', height: 120}) : ({display: 'none'})}>
 
-                        <TouchableOpacity onPress={this.togglePlay}>
+                <Player
+                    onNext={this.skipToNext}
+                    style={styles.player}
+                    onPrevious={this.skipToPrevious}
+                    onTogglePlayback={this.togglePlayback}
+                />    
 
-                            {this.state.isPlaying ? (
-                                <Icon 
-                                    name="pause"
-                                    size={20}
-                                />
-                            ) : (
-                                <Icon 
-                                    name="play"
-                                    size={20}
-                                />
-                            )}
-                            
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={this.next}>
-                            <Icon 
-                                    name="forward"
-                                    size={20}
-                            />
-                        </TouchableOpacity>
-                    </View>
-
-                   
-                    
                 </View>
                 
             </View>
@@ -183,8 +346,9 @@ const styles = StyleSheet.create({
     },
     image: {
         alignSelf: 'center',
-        width: deviceWidth / 1.3,
-        height: deviceHeigh / 3,
+        resizeMode: 'contain',
+        width: deviceWidth / 1,
+        height: deviceHeigh / 3.5,
     },
     headerText: {
         alignSelf: 'center',
