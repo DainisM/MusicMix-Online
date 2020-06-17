@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Picker} from '@react-native-community/picker';
+import axios from 'axios';
 
 var deviceWidth = Dimensions.get('window').width;
 var deviceHeigh = Dimensions.get('window').height;
@@ -13,36 +14,72 @@ export default class Browse extends React.Component {
 
         this.state = {
             username: '',
-            genres: [
-                {id: 1234545454, name: 'Rock', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
-                {id: 1234545484, name: 'Pop', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
-                {id: 1234545419, name: 'Metal', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
-                {id: 1234545413, name: 'Alternative', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
-                {id: 1234545464, name: 'Electro', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
-                {id: 1234545487, name: 'House', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
-                {id: 1234545458, name: 'Hip Hop', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
-                {id: 1234545497, name: 'Rap', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
-                {id: 1234545444, name: 'Reggea', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png'},
-            ],
-            moods: [
-                {id: 1234545984, name: 'Chill', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {id: 1234545944, name: 'Motivation', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {id: 1234545464, name: 'Workout', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {id: 1234545914, name: 'Car', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {id: 1234545244, name: 'Party', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-            ],
-            tops: [
-                {id: 1234545816, name: 'Newest tracks', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {id: 1234545759, name: 'Top of last 10 years', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-                {id: 1234545555, name: 'Editors top 15', image: 'C:/Users/damo/Desktop/MusicMix - Mobile app/Music.png',},
-            ]
+            genres: [],
+            moods: [],
+            tops: [],
         }
     }
 
+
+    //Method used to fetch all tops, genres and moods playlists on render
     async componentDidMount() {
         this.setState({username: await AsyncStorage.getItem('Username')})
+
+        //Variable that holds JWT token found in storage
+        var token = await AsyncStorage.getItem('Token');
+
+        //Fetching tops
+        await axios
+            .get('http://api.music-mix.live/browse/tops', 
+                { headers: { 
+                    Authorization: 'Bearer '+token 
+                }, },)
+            .then(response => {
+                this.setState({tops: response.data.tops})
+                let tops = [...this.state.tops];
+                tops.push({id: 'newestTracks', description: 'Here is top 20 of the newest tracks on MusicMix', links: {image: 'https://raw.githubusercontent.com/DainisM/MusicMix-web-app/master/src/app/images/NewestMusic.jpg?token=AKDI27T4MUYVOOZFRSIME3S66MHEM'}, name: 'Newest Tracks'})
+                this.setState({tops: tops});
+
+            })
+            //else log error
+            .catch(error => {
+                console.log("error " + error);
+            });
+
+
+        //Fetching genres
+        await axios
+        .get('http://api.music-mix.live/browse/genres', 
+            { headers: { 
+                Authorization: 'Bearer '+token 
+            }, },)
+        .then(response => {
+            this.setState({genres: response.data.genres})
+
+        })
+        //else log error
+        .catch(error => {
+            console.log("error " + error);
+        });
+
+        //Fetching moods
+        await axios
+        .get('http://api.music-mix.live/browse/moods', 
+            { headers: { 
+                Authorization: 'Bearer '+token 
+            }, },)
+        .then(response => {
+            this.setState({moods: response.data.moods})
+
+        })
+        //else log error
+        .catch(error => {
+            console.log("error " + error);
+        });
+
     }
 
+    //Method used to navigate to pofile or logout when dropdown item is pressed
     dropdown = async (value) => {
 
         if (value === 'profile') {
@@ -85,10 +122,10 @@ export default class Browse extends React.Component {
                         showsHorizontalScrollIndicator={false}
                         pagingEnabled={true}
                         data={this.state.tops}
-                        keyExtractor={item => item.id.toString()}
+                        keyExtractor={item => item.id}
                         renderItem={({item}) => 
                         <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Featured'})}>
-                            <Image style={styles.browseImages} source={require('../assets/Music.png')} />
+                            <Image style={styles.browseImages} source={{uri: item.links.image}} />
                             <Text style={styles.browseItemNames}>{item.name}</Text>
                         </TouchableOpacity>} 
                     />
@@ -103,10 +140,10 @@ export default class Browse extends React.Component {
                         scrollEventThrottle={200}
                         decelerationRate="fast"
                         data={this.state.genres}
-                        keyExtractor={item => item.id.toString()}
+                        keyExtractor={item => item.id}
                         renderItem={({item}) => 
                         <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Genres'})}>
-                            <Image style={styles.browseImages} source={require('../assets/Music.png')} />
+                            <Image style={styles.browseImages} source={{uri: item.links.image}} />
                             <Text style={styles.browseItemNames}>{item.name}</Text>
                         </TouchableOpacity>} 
                     />
@@ -121,10 +158,10 @@ export default class Browse extends React.Component {
                         scrollEventThrottle={200}
                         decelerationRate="fast"
                         data={this.state.moods}
-                        keyExtractor={item => item.id.toString()}
+                        keyExtractor={item => item.id}
                         renderItem={({item}) => 
                         <TouchableOpacity style={styles.browseTouchables} key={item.id} onPress={() => this.props.navigation.navigate('Playlist', {id: item.id, name: item.name, from: 'Moods'})}>
-                            <Image style={styles.browseImages} source={require('../assets/Music.png')} />
+                            <Image style={styles.browseImages} source={{uri: item.links.image}} />
                             <Text style={styles.browseItemNames}>{item.name}</Text>
                         </TouchableOpacity>} 
                     />
@@ -176,5 +213,6 @@ const styles = StyleSheet.create({
         color: '#00758a',
         fontWeight: 'bold',
         fontSize: 18,
+        marginHorizontal: 10,
     },
 });
