@@ -1,70 +1,101 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from 'axios';
+
 
 export default class ChangePassword extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            password: '',
-            currentPassword: '',
             newPassword: '',
             confPassword: '',
             PasswordError: '',
+            successMsg: '',
         }
     }
 
+    //Method used to add 2 listeners when component mounts
     componentDidMount() {
         this.props.navigation.addListener('focus', this._onFocus);
         this.props.navigation.addListener('blur', this._onBlur);
     }
     
+    //method used to remove listeners when component unmounts
     componentWillUnmount() {
         this.props.navigation.removeListener('blur', this._onBlur);
         this.props.navigation.removeListener('focus', this._onFocus);
     }
 
     _onFocus = () => {
-        this.setState({password: 'Passw0rd'});
+        
     }
 
+    //Method fired up when users tabs away
     _onBlur = () => {
         this.setState({
-            password: '',
-            currentPassword: '',
             newPassword: '',
             confPassword: '',
             PasswordError: '',
+            successMsg: '',
         })
     }
 
-    validate = () => {
-        if (!this.state.currentPassword.match(this.state.password)) {
-            this.setState({PasswordError: 'Invalid current password'});
-            return false;
-        }
-
+    //Method used to validate user input
+    validate() {  
+        
+        //If new password doesnt match this regex string
         if (!this.state.newPassword.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/)) {
+            //set this error msg to state and return false
             this.setState({PasswordError: 'Password must be at least 8 characters and contain at least 1 number, 1 uppercase and 1 lowercase character'})
             return false;
         }
 
+        //If confirmation password doesnt match new password
         if (!this.state.confPassword.match(this.state.newPassword)) {
+            //set this error msg to state and return false
             this.setState({PasswordError: 'Passwords does not match'})
             return false;
         }
             
+        //else return true
         return true;
-        
     }
 
     async changePassword() {
-        const isValid = this.validate();
+       const isValid = this.validate();
 
         if (isValid) {
-            console.log('Current password: '+this.state.currentPassword);
-            console.log('New password: '+this.state.newPassword);
-            console.log('Confirm new password: '+this.state.confPassword);
+
+            //Variable that holds JWT token found in storage
+            var token = await AsyncStorage.getItem('Token');
+            //Variable that holds user id found in storage
+            var userID = await AsyncStorage.getItem('ID');
+            var url = "https://music-mix.live/users/pass/" + userID+""
+
+            //Patch user data
+            axios
+            .patch(url, 
+                { password: this.state.newPassword },  
+                { headers: { Authorization: 'Bearer '+token }, },)
+            .then(response => {
+
+                console.log(response);
+                //If response ok then do following
+                if (response.status === 200) {
+                    //set successMsg to "...changed successfully"
+                    this.setState({ successMsg: "Password changed successfully!" });
+                    //After 1 second set successMsg back to empty
+                    setTimeout(() => {
+                        this.setState({ successMsg: '' });
+                    }, 1000)
+                }
+            })
+            //else log error
+            .catch(error => {
+                console.log("error " + error);
+            });
         }
     }
 
@@ -74,17 +105,6 @@ export default class ChangePassword extends React.Component {
             <View style={styles.container}>               
                 
                 <View style={styles.profilePassContainer}>
-
-                    <View style={styles.profilePassRow}>
-                        <Text style={styles.profilePassLabel}>Current password</Text>
-                        <TextInput 
-                            style={styles.profilePassInput}
-                            autoCompleteType={'password'} 
-                            secureTextEntry={true}
-                            onChangeText={(text) => this.setState({currentPassword: text, PasswordError: ''})}
-                            value={this.state.currentPassword} 
-                        />
-                    </View>
 
                     <View style={styles.profilePassRow}>
                         <Text style={styles.profilePassLabel}>New password</Text>
@@ -117,6 +137,10 @@ export default class ChangePassword extends React.Component {
                     <Text style={styles.profilePassButtonText}>Change password</Text>
                 </TouchableOpacity>
 
+                {this.state.successMsg !== '' ? (
+                        <Text style={styles.successMsg}>{this.state.successMsg}</Text>
+                    ) : (null)}
+
             </View>
         </TouchableWithoutFeedback>
         );
@@ -140,7 +164,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         width: '80%',
         alignSelf: 'center',
-        marginVertical: '5%',
+        marginVertical: '10%',
     },
     profilePassLabel: {
         fontWeight: 'bold',
@@ -158,6 +182,13 @@ const styles = StyleSheet.create({
     ErrorText: {
         alignSelf: 'center',
         color: 'darkred',
+    },
+    successMsg: {
+        marginVertical: '5%',
+        fontWeight: 'bold',
+        fontSize: 16,
+        alignSelf: 'center',
+        color: 'green',
     },
     profilePassButton: {
         backgroundColor: 'darkcyan',
