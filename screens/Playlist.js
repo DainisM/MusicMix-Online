@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, FlatList, Modal} from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, FlatList} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import TrackPlayer, {usePlaybackState} from 'react-native-track-player';
 import Player from '../components/player';
@@ -20,6 +20,7 @@ export default class Library extends React.Component {
             name: this.props.route.params.name,
             url: '',
             songs: [],
+            currentSong: '',
         }
     }
 
@@ -181,14 +182,14 @@ export default class Library extends React.Component {
 
     //Method fired up when users tabs away
     _onBlur = () => {
-        this.setState({songs: []});
+        this.setState({songs: [], currentSong: ''});
         TrackPlayer.reset();
     }
 
 
     async setup() {
-        await TrackPlayer.setupPlayer({}).then(() => {
-            TrackPlayer.add(this.state.songs)
+        await TrackPlayer.setupPlayer({}).then(async () => {
+            await TrackPlayer.add(this.state.songs);
         });
         await TrackPlayer.updateOptions({
             stopWithApp: true,
@@ -212,13 +213,13 @@ export default class Library extends React.Component {
         //Getting current track
         const currentTrack = await TrackPlayer.getCurrentTrack();
         //If there is no track then initialize it from state and start playing
-        if (currentTrack == null) {
+        if (currentTrack === null) {
           await TrackPlayer.reset();
           await TrackPlayer.add(this.state.songs);
           await TrackPlayer.play();
         } else {
         //If state is paused them toggle play otherwise toggle pause
-          if (currentState === TrackPlayer.STATE_PAUSED) {
+          if (currentState._55 === TrackPlayer.STATE_PAUSED) {
             await TrackPlayer.play();
           } else {
             await TrackPlayer.pause();
@@ -247,22 +248,23 @@ export default class Library extends React.Component {
     //Method used to skip to next song in array
     async skipToNext() {
         try {
-          await TrackPlayer.skipToNext();
+            await TrackPlayer.skipToNext();
         } catch (_) {}
     }
       
     //Method used to skip to previous track in array
     async skipToPrevious() {
         try {
-          await TrackPlayer.skipToPrevious();
+            await TrackPlayer.skipToPrevious();
         } catch (_) {}
     }
 
     //On click skips to song and start playing it by id and shows bottom "modal"
-    openTrack(id) {
-        TrackPlayer.skip(id);
-        TrackPlayer.play();
-        this.setState({modalVisible: true})
+    async openTrack(id) {
+        await TrackPlayer.skip(id);
+        await TrackPlayer.play();
+
+        this.setState({modalVisible: true});
     }
 
     render() {
@@ -287,14 +289,14 @@ export default class Library extends React.Component {
                     keyExtractor={item => item.id}
                     renderItem={({item}) => 
                     <View style={styles.songContainer} key={item.id}>
-
                         <TouchableOpacity style={styles.songClickable}  onPress={() => this.openTrack(item.id)}>
+                            
                             <Icon 
                                 style={{width: '10%', marginLeft: '2%'}}
                                 name="music"
                                 size={30}
                             />
-                                    
+                    
                             <View style={{flexDirection: 'column', width: '60%'}}>
                                 <Text style={{fontWeight: 'bold'}}>{item.title}</Text>
                                 <Text>{item.artist}</Text>
@@ -316,7 +318,8 @@ export default class Library extends React.Component {
                             />
                         </TouchableOpacity>
 
-                    </View>}
+                    </View>
+                    }
                 />
 
 

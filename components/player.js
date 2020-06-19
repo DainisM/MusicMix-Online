@@ -9,11 +9,15 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Slider
 } from "react-native";
 import Icon from 'react-native-vector-icons/FontAwesome';
+// import Slider from '@react-native-community/slider';
 
 //Method that shows progress bar with timestamps
 function ProgressBar() {
+  const [isSeeking, setIsSeeking] = useState(false);
+  const [seek, setSeek] = useState(0);
   const progress = useTrackPlayerProgress();
 
     //Method used to add 0 at start if number is smaller than 10 so it would show like - 05 instead of 5
@@ -31,12 +35,23 @@ function ProgressBar() {
       <View style={{flexDirection:'row'}}>
       <Text style={styles.progressText}>{padWithZero(Math.floor(progress.position / 60))}:{padWithZero(Math.floor(progress.position % 60))}</Text>
         <View style={styles.progress}>
-          
-          <View style={{ flex: progress.position, backgroundColor: "cyan" }} />
-          <View
-            style={{
-              flex: progress.duration - progress.position,
-              backgroundColor: "grey"
+
+          {/* Slider used as seekbar to seek to specific moment in song and shows current position in song */}
+          <Slider
+            style={{width: '100%', height: 5, justifyContent: 'center'}}
+            minimumValue={0}
+            maximumValue={progress.duration}
+            minimumTrackTintColor="cyan"
+            maximumTrackTintColor="#000000"
+            value={progress.position}
+            onValueChange={(value) => {
+              TrackPlayer.pause();
+              setIsSeeking(true);
+              setSeek(value);
+            }}
+            onSlidingComplete={(value) => {
+              TrackPlayer.seekTo(value);
+              TrackPlayer.play();
             }}
           />
           
