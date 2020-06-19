@@ -14,7 +14,7 @@ export default class Library extends React.Component {
         super(props);
 
         this.state = {
-            modalVisible: false,
+            playerVisible: false,
             isPlaying: false,
             id: this.props.route.params.id,
             name: this.props.route.params.name,
@@ -24,10 +24,25 @@ export default class Library extends React.Component {
         }
     }
 
-    //Method used to add 2 listeners when component mounts
+    //Method used to add listeners when component mounts
     componentDidMount() {
         this.props.navigation.addListener('focus', this._onFocus);
         this.props.navigation.addListener('blur', this._onBlur);
+        TrackPlayer.addEventListener('remote-play', async () => {
+            this.setState({playerVisible: true});
+        });
+        TrackPlayer.addEventListener('remote-next', async () => {
+            //Calling method to get current song ID
+            this.getSongID();
+        });
+        TrackPlayer.addEventListener('remote-previous', async () => {
+            //Calling method to get current song ID
+            this.getSongID();
+        });
+        TrackPlayer.addEventListener('playback-track-changed', async () => {
+            //Calling method to get current song ID
+            this.getSongID();
+        })
     }
     
     //method used to remove listeners when component unmounts
@@ -186,11 +201,15 @@ export default class Library extends React.Component {
         TrackPlayer.reset();
     }
 
-
+    //Method used to initialize Track player
     async setup() {
+        //Ading array of songs to Track player
         await TrackPlayer.setupPlayer({}).then(async () => {
             await TrackPlayer.add(this.state.songs);
+            //Calling method to get current song ID
+            this.getSongID();
         });
+        //initializing Track player options such as caabilities (notification controls)
         await TrackPlayer.updateOptions({
             stopWithApp: true,
             capabilities: [
@@ -204,6 +223,12 @@ export default class Library extends React.Component {
                 TrackPlayer.CAPABILITY_PAUSE,
             ]
         });
+    }
+
+    //Method used to get current track ID and set it into the state
+    getSongID = async () => {
+        const currentSongID = await TrackPlayer.getCurrentTrack();
+        this.setState({currentSong: currentSongID});
     }
 
     //Method used to toggle between play and pause
@@ -246,16 +271,21 @@ export default class Library extends React.Component {
     }
       
     //Method used to skip to next song in array
-    async skipToNext() {
+    skipToNext = async () => {
         try {
             await TrackPlayer.skipToNext();
+
+            this.getSongID();
         } catch (_) {}
     }
       
     //Method used to skip to previous track in array
-    async skipToPrevious() {
+    skipToPrevious = async () => {
         try {
             await TrackPlayer.skipToPrevious();
+            
+            //Calling method to get current song ID
+            this.getSongID();
         } catch (_) {}
     }
 
@@ -263,8 +293,10 @@ export default class Library extends React.Component {
     async openTrack(id) {
         await TrackPlayer.skip(id);
         await TrackPlayer.play();
-
-        this.setState({modalVisible: true});
+        //Setting this to true to show player
+        this.setState({playerVisible: true});
+        //Calling method to get current song ID
+        this.getSongID();
     }
 
     render() {
@@ -288,7 +320,7 @@ export default class Library extends React.Component {
                     data={this.state.songs}
                     keyExtractor={item => item.id}
                     renderItem={({item}) => 
-                    <View style={styles.songContainer} key={item.id}>
+                    <View style={this.state.currentSong == item.id ? styles.songContainerCurrent : styles.songContainer} key={item.id}>
                         <TouchableOpacity style={styles.songClickable}  onPress={() => this.openTrack(item.id)}>
                             
                             <Icon 
@@ -323,13 +355,14 @@ export default class Library extends React.Component {
                 />
 
 
-                <View style={this.state.modalVisible ? ({display: 'flex', height: 120}) : ({display: 'none'})}>
+                <View style={this.state.playerVisible ? ({display: 'flex', height: 120}) : ({display: 'none'})}>
 
                 <Player
                     onNext={this.skipToNext}
                     style={styles.player}
                     onPrevious={this.skipToPrevious}
                     onTogglePlayback={this.togglePlayback}
+                    getSongID={this.getSongID}
                 />    
 
                 </View>
@@ -367,6 +400,13 @@ const styles = StyleSheet.create({
         marginVertical: 5,
         paddingVertical: 5,
     },
+    songContainerCurrent: {
+        flexDirection: 'row',
+        width: '100%',
+        backgroundColor: '#5d8d9c',
+        marginVertical: 5,
+        paddingVertical: 5,
+    },
     songClickable: {
         flexDirection: 'row',
         width: '85%',
@@ -378,14 +418,5 @@ const styles = StyleSheet.create({
         marginLeft: '2%',
         paddingHorizontal: 5,
         width: '10%'
-    },
-    modal: {
-        justifyContent: "flex-end",
-        margin: 0,
-    },
-    modalContainer: {
-        position: 'absolute',
-        bottom: 0,
-        height: 100,
     },
 });

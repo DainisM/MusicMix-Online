@@ -16,8 +16,6 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 //Method that shows progress bar with timestamps
 function ProgressBar() {
-  const [isSeeking, setIsSeeking] = useState(false);
-  const [seek, setSeek] = useState(0);
   const progress = useTrackPlayerProgress();
 
     //Method used to add 0 at start if number is smaller than 10 so it would show like - 05 instead of 5
@@ -46,8 +44,6 @@ function ProgressBar() {
             value={progress.position}
             onValueChange={(value) => {
               TrackPlayer.pause();
-              setIsSeeking(true);
-              setSeek(value);
             }}
             onSlidingComplete={(value) => {
               TrackPlayer.seekTo(value);
