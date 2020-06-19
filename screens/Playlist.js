@@ -15,6 +15,7 @@ export default class Library extends React.Component {
 
         this.state = {
             playerVisible: false,
+            modalVisible: false,
             isPlaying: false,
             id: this.props.route.params.id,
             name: this.props.route.params.name,
@@ -84,7 +85,7 @@ export default class Library extends React.Component {
                         let trackUrl = 'http://api.music-mix.live' +track.url.split('..')[1]
 
                         //Pushing new object in array
-                        oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: trackUrl});
+                        oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: trackUrl, artistID: track.artist_id});
 
                         //Setting array to state
                         this.setState({songs: oldArray});
@@ -116,7 +117,7 @@ export default class Library extends React.Component {
                         let oldArray = [...this.state.songs]
 
                         //Pushing new object in array
-                        oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: track.url});
+                        oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: track.url, artistID: track.artist_id});
 
                         //Setting array to state
                         this.setState({songs: oldArray});
@@ -150,7 +151,7 @@ export default class Library extends React.Component {
                    let oldArray = [...this.state.songs]
                    
                    //Pushing new object in array
-                   oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: track.url});
+                   oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: track.url, artistID: track.artist_id});
 
                    //Setting array to state
                    this.setState({songs: oldArray});
@@ -332,8 +333,8 @@ export default class Library extends React.Component {
                             <View style={{flexDirection: 'column', width: '60%'}}>
                                 <Text style={{fontWeight: 'bold'}}>{item.title}</Text>
                                 <Text>{item.artist}</Text>
-                                
                             </View>
+
                                         
                             {item.explicit ? (
                                 <Text 
