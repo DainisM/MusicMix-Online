@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, FlatList} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import TrackPlayer, {usePlaybackState} from 'react-native-track-player';
-import Player from '../components/player';
+import Player from '../components/player/player';
+import SongModal from '../components/player/songModal';
 import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios';
 
@@ -22,6 +23,9 @@ export default class Library extends React.Component {
             url: '',
             songs: [],
             currentSong: '',
+            songID: '',
+            artistsID: [],
+            artistName: '',
         }
     }
 
@@ -182,7 +186,7 @@ export default class Library extends React.Component {
                     let trackUrl = 'http://api.music-mix.live' +track.url.split('..')[1]
 
                     //Pushing new object in array
-                    oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: trackUrl});
+                    oldArray.push({id: track._id, artist: artistName, title: track.name, explicit: track.explicit, url: trackUrl, artistID: track.artist_id});
 
                     //Setting array to state
                     this.setState({songs: oldArray});
@@ -300,6 +304,24 @@ export default class Library extends React.Component {
         this.getSongID();
     }
 
+    closeModal = () => {
+        this.setState({
+            modalVisible: false,
+            songID: '',
+            artistsID: [],
+            artistsName: '',
+        });
+    }
+
+    openModal (song, artistID, artistName) {
+        this.setState({
+            modalVisible: true,
+            songID: song,
+            artistsID: artistID,
+            artistsName: artistName,
+        });
+    }
+
     render() {
         return (
             <View style={styles.container}>
@@ -344,7 +366,7 @@ export default class Library extends React.Component {
 
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.songLinks}>
+                        <TouchableOpacity style={styles.songLinks} onPress={() => this.openModal(item.id, item.artistID, item.artist)}>
                             <Icon 
                                 name="ellipsis-v"
                                 size={30}
@@ -353,6 +375,14 @@ export default class Library extends React.Component {
 
                     </View>
                     }
+                />
+
+                <SongModal 
+                    visible={this.state.modalVisible}
+                    songID={this.state.songID}
+                    artistsID={this.state.artistsID}
+                    artistsName={this.state.artistsName}
+                    closeModal={this.closeModal}
                 />
 
 
