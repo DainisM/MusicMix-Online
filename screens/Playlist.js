@@ -304,6 +304,7 @@ export default class Library extends React.Component {
         this.getSongID();
     }
 
+    //method for closing modal
     closeModal = () => {
         this.setState({
             modalVisible: false,
@@ -313,6 +314,7 @@ export default class Library extends React.Component {
         });
     }
 
+    //Method for setting state (opening modal)
     openModal (song, artistID, artistName) {
         this.setState({
             modalVisible: true,
@@ -320,6 +322,12 @@ export default class Library extends React.Component {
             artistsID: artistID,
             artistsName: artistName,
         });
+    }
+
+    //Method used to close modal and navigate to 'Artist' screen
+    showArtist = (id) => {
+        this.setState({modalVisible: false});
+        this.props.navigation.navigate('Artist', {artistID: id});
     }
 
     render() {
@@ -383,6 +391,7 @@ export default class Library extends React.Component {
                     artistsID={this.state.artistsID}
                     artistsName={this.state.artistsName}
                     closeModal={this.closeModal}
+                    showArtist={this.showArtist}
                 />
 
 

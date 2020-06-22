@@ -9,6 +9,7 @@ import Login from './screens/Login';
 import Home from './screens/Home';
 import Profile from './screens/Profile';
 import Playlist from './screens/Playlist';
+import Artist from './screens/Artist';
 
 export default function App() {
 
@@ -40,6 +41,10 @@ export default function App() {
         <Stack.Screen 
           name="Playlist"
           component={Playlist}
+        />
+        <Stack.Screen 
+          name="Artist"
+          component={Artist}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -66,11 +66,6 @@ export default class SongModal extends Component {
         });
     }
 
-    showArtist(id) {
-        console.log(id);
-    }
-
-
     render() {
         return (
             <Modal
@@ -117,7 +112,7 @@ export default class SongModal extends Component {
                             <View>
                                 <Text  style={styles.headers}>See artist:</Text>
 
-                                <TouchableOpacity style={styles.links} onPress={() => this.showArtist(this.props.artistsID[0])}>
+                                <TouchableOpacity style={styles.links} onPress={() => this.props.showArtist(this.props.artistsID[0])}>
                                     <Text style={styles.artistName}>{this.props.artistsName}</Text>
                                 </TouchableOpacity>
                             </View>
@@ -125,11 +120,11 @@ export default class SongModal extends Component {
                             <View>
                                 <Text  style={styles.headers}>See artist:</Text>
 
-                                <TouchableOpacity style={styles.links} onPress={() => this.showArtist(this.props.artistsID[0])}>
+                                <TouchableOpacity style={styles.links} onPress={() => this.props.showArtist(this.props.artistsID[0])}>
                                     <Text style={styles.artistName}>{this.props.artistsName.split(' & ')[0]}</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.links} onPress={() => this.showArtist(this.props.artistsID[1])}>
+                                <TouchableOpacity style={styles.links} onPress={() => this.props.showArtist(this.props.artistsID[1])}>
                                     <Text style={styles.artistName}>{this.props.artistsName.split(' & ')[1]}</Text>
                                 </TouchableOpacity>
                             </View>
