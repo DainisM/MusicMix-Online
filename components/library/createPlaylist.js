@@ -1,9 +1,13 @@
 import React, {Component} from 'react';
 import { Dimensions, View, Text, StyleSheet, TextInput, Modal, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import ImagePicker from 'react-native-image-picker';
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from 'axios';
 
 var deviceWidth = Dimensions.get('window').width;
 var deviceHeigh = Dimensions.get('window').height;
+
+const formData = new FormData();
 
 export default class CreatePlaylist extends Component {
     constructor(props) {
@@ -12,9 +16,10 @@ export default class CreatePlaylist extends Component {
         this.state = {
             playlistName: '',
             playlistDescription: '',
-            playlistImage: null,
+            playlistImage: '',
             playlistNameError: '',
             playlistDescriptionError: '',
+            successMsg: false,
         }
     }
 
@@ -42,10 +47,9 @@ export default class CreatePlaylist extends Component {
         };
       
         ImagePicker.launchImageLibrary(options, (res) => {
-
-            console.log('response', JSON.stringify(res.path));
+            formData.append('image', {uri: 'file://'+res.path, type:res.type, name: res.fileName});
             this.setState({
-              playlistImage: res.path,
+                playlistImage: 'file://'+res.path
             });
         });
       }
@@ -55,9 +59,42 @@ export default class CreatePlaylist extends Component {
         const isValid = this.validate();
 
         if(isValid) {
-            console.log('Name: ' +this.state.playlistName);
-            console.log('Description: ' +this.state.playlistDescription);
-            console.log('Image: '+this.state.playlistImage);
+
+            //Variable that holds JWT token found in storage
+            var token = await AsyncStorage.getItem('Token');
+            //Variable that holds user id found in storage
+            var userID = await AsyncStorage.getItem('ID');
+            var url = "http://api.music-mix.live/playlists/users/" + userID+""
+            formData.append('name', this.state.playlistName);
+            formData.append('description', this.state.playlistDescription);
+
+            //Patch user data
+            axios
+            .post(url, 
+                {
+                    formData
+                },  { headers: { 
+                        Accept: 'application/json',
+                        'Content-Type': 'multipart/form-data;',
+                        Authorization: 'Bearer ' + token 
+                }, },)
+            .then(async response => {
+                console.log(response);
+                //If response ok then do following
+                if (response.status === 200) {
+                    //set successMsg to true
+                    this.setState({ successMsg: true });
+                    //After 1 second redirect to home page
+                    setTimeout(() => {
+                        this.setState({ successMsg: false });
+                        this.props.closeModal();
+                    }, 1000)
+                }
+            })
+            //else log error
+            .catch(error => {
+                console.log("error " + error);
+            });
 
             this.setState({
                 playlistName: '',
@@ -67,7 +104,7 @@ export default class CreatePlaylist extends Component {
                 playlistDescriptionError: '',
             })
     
-            this.props.closeModal();
+            //this.props.closeModal();
         }
     }
     
@@ -150,7 +187,9 @@ export default class CreatePlaylist extends Component {
                                     </TouchableOpacity>
                                 </View>
 
-                                
+                                {this.state.successMsg ? (
+                                    <Text style={styles.successMsg}>Playlist created!</Text>
+                                ) : (null)}
 
                             </View>
                         </View>
@@ -239,5 +278,12 @@ const styles = StyleSheet.create({
     errorText: {
         alignSelf: 'center',
         color: 'darkred',
+    },
+    successMsg: {
+        marginVertical: '5%',
+        fontWeight: 'bold',
+        fontSize: 16,
+        alignSelf: 'center',
+        color: 'green',
     },
   });
