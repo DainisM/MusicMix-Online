@@ -23,6 +23,7 @@ export default class Register extends React.Component {
         }
     }
 
+    //Method to validate user inputs
     validate = () => {
         let emailError = "";
         let usernameError = "";
@@ -50,6 +51,7 @@ export default class Register extends React.Component {
             birthdayError = "Please choose your birthday";
         }
 
+        //If there is some error then return false
         if (
             emailError ||
             usernameError ||
@@ -72,15 +74,11 @@ export default class Register extends React.Component {
     }
 
     async signUp() {
+        //Calling validation method
         const isValid = this.validate();
 
+        //If isValid return true then post data to API
         if (isValid) {
-            console.log('Email: '+this.state.email);
-            console.log('Username: '+this.state.username);
-            console.log('Password: '+this.state.password);
-            console.log('Confirm password: '+this.state.confPassword);
-            console.log('Gender: '+this.state.gender);
-            console.log('Birthday: '+this.state.birthday);
 
             await fetch('http://api.music-mix.live/users/signup', {
             method: 'POST',
