@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions} 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CreatePlaylist from '../components/library/createPlaylist';
 import ShowPlaylist from '../components/library/showPlaylist';
+import TrackPlayer from 'react-native-track-player';
 import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios';
 
@@ -35,12 +36,16 @@ export default class Library extends React.Component {
 
     //Listener method fired up when tab is focused
     _onFocus = async () => {
+        this.renderUserPlaylists();
+    }
+
+    async renderUserPlaylists() {
         //Variable that holds JWT token found in storage
         var token = await AsyncStorage.getItem('Token');
         var userID = await AsyncStorage.getItem('ID');
 
         //Fetching tops
-        await axios
+        axios
         .get('http://api.music-mix.live/playlists/users/'+userID+"", 
             { headers: { 
                 Authorization: 'Bearer '+token 
@@ -62,6 +67,7 @@ export default class Library extends React.Component {
     //method used to close createPlaylist modal
     closeModal = () => {
         this.setState({modalVisible: false});
+        this.renderUserPlaylists();
     }
 
     //method used to open createPlaylist modal
@@ -69,12 +75,21 @@ export default class Library extends React.Component {
         this.setState({modalVisible: true});
     }
 
+    //Method used to open playlist 
     openPlaylist = (id) => {
         this.setState({openPlaylist: true, playlistID: id});
     }
 
+    //Method used to close playlist and reset track player
     closePlaylist = () => {
         this.setState({openPlaylist: false});
+        TrackPlayer.reset();
+    }
+
+    //Method used to close modal and navigate to 'Artist' screen
+    showArtist = (id) => {
+        this.setState({openPlaylist: false});
+        this.props.navigation.navigate('Artist', {artistID: id});
     }
 
 
@@ -102,9 +117,9 @@ export default class Library extends React.Component {
                 <FlatList 
                     style={{marginTop: '5%'}} 
                     data={this.state.playlists}
-                    keyExtractor={item => item.name}
+                    keyExtractor={item => item._id}
                     renderItem={({item}) => 
-                        <TouchableOpacity style={styles.userPlaylistContainer} onPress={() => this.openPlaylist(id)}>
+                        <TouchableOpacity style={styles.userPlaylistContainer} onPress={() => this.openPlaylist(item._id)}>
                             <Image style={styles.userPlaylistImage} source={{uri: item.image}}/>
                             <Text style={styles.userPlaylisName}>{item.name}</Text>
                         </TouchableOpacity>
@@ -115,6 +130,7 @@ export default class Library extends React.Component {
                     playlistVisible={this.state.openPlaylist}
                     playlistID={this.state.playlistID}
                     closePlaylist={this.closePlaylist}
+                    showArtist={this.showArtist}
                 />
 
             </View>
