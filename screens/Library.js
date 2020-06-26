@@ -84,6 +84,7 @@ export default class Library extends React.Component {
     closePlaylist = () => {
         this.setState({openPlaylist: false});
         TrackPlayer.reset();
+        this.renderUserPlaylists();
     }
 
     //Method used to close modal and navigate to 'Artist' screen
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
         marginBottom: '10%',
     },
     userPlaylistImage: {
-        height: deviceHeigh / 4,
+        height: deviceHeigh / 3,
         width: deviceWidth / 1.5,
         resizeMode: 'stretch',
     },

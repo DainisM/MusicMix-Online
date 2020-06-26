@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import { Dimensions, View, Text, StyleSheet, Modal, TouchableOpacity, FlatList, Image, ScrollView } from 'react-native';
 import TrackPlayer, {usePlaybackState} from 'react-native-track-player';
+import EditPlaylist from './editPlaylist';
 import RemoveSong from './removeSong';
 import Player from '../player/player';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -28,6 +29,7 @@ export default class ShowPlaylist extends Component {
             songID: '',
             artistsID: [],
             artistName: '',
+            editPlaylist: false,
         }
     }
 
@@ -236,6 +238,19 @@ export default class ShowPlaylist extends Component {
         this.props.showArtist(id);
     }
 
+    openEditPlaylist = () => {
+        this.setState({editPlaylist: true});
+    }
+
+    closeEditPlaylist = () => {
+        this.setState({editPlaylist: false});
+    }
+
+    backToLibrary = () => {
+        this.setState({editPlaylist: false});
+        this.props.closePlaylist();
+    }
+
     render() {
         return (
             <Modal
@@ -248,6 +263,15 @@ export default class ShowPlaylist extends Component {
                     <TouchableOpacity style={styles.backButton} onPress={() => this.props.closePlaylist()}>
                         <Icon 
                             name='reply'
+                            size={34}
+                            color={'darkcyan'}
+                        />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.playlstOptionsButton} onPress={() => this.openEditPlaylist()}>
+                        <Icon 
+                            style={{alignSelf: 'center'}}
+                            name='ellipsis-v'
                             size={34}
                             color={'darkcyan'}
                         />
@@ -333,6 +357,12 @@ export default class ShowPlaylist extends Component {
                     playlistID={this.props.playlistID}
                 />
 
+                <EditPlaylist 
+                    isVisible={this.state.editPlaylist}
+                    closeEditPlaylist={this.closeEditPlaylist}
+                    playlistID={this.props.playlistID}
+                    backToLibrary={this.backToLibrary}
+                />
 
                 <View style={this.state.playerVisible ? ({display: 'flex', height: 120}) : ({display: 'none'})}>
 
@@ -360,6 +390,14 @@ const styles = StyleSheet.create({
     },
     backButton: {
         margin: '2%',
+        width: '10%',
+    },
+    playlstOptionsButton: {
+        position: 'absolute',
+        right: 0,
+        margin: '2%',
+        width: '5%',
+        alignContent: 'flex-end',
     },
     image: {
         alignSelf: 'center',

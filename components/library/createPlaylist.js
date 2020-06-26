@@ -7,7 +7,7 @@ import axios from 'axios';
 var deviceWidth = Dimensions.get('window').width;
 var deviceHeigh = Dimensions.get('window').height;
 
-const formData = new FormData();
+const PostData = new FormData();
 
 export default class CreatePlaylist extends Component {
     constructor(props) {
@@ -20,6 +20,12 @@ export default class CreatePlaylist extends Component {
             playlistNameError: '',
             playlistDescriptionError: '',
             successMsg: false,
+        }
+    }
+
+    async componentDidUpdate(nextProps) {
+        if (nextProps.ModalVisible === false && this.props.ModalVisible !== false) {
+                 
         }
     }
 
@@ -47,12 +53,12 @@ export default class CreatePlaylist extends Component {
         };
       
         ImagePicker.launchImageLibrary(options, (res) => {
-            formData.append('image', {uri: 'file://'+res.path, type:res.type, name: res.fileName});
+            PostData.append('image', res);
             this.setState({
                 playlistImage: 'file://'+res.path
             });
         });
-      }
+    }
 
     async createNewPlaylist() {
 
@@ -64,24 +70,26 @@ export default class CreatePlaylist extends Component {
             var token = await AsyncStorage.getItem('Token');
             //Variable that holds user id found in storage
             var userID = await AsyncStorage.getItem('ID');
-            var url = "http://api.music-mix.live/playlists/users/" + userID+""
-            formData.append('name', this.state.playlistName);
-            formData.append('description', this.state.playlistDescription);
+            var posturl = "http://api.music-mix.live/playlists/users/"+userID+""
+            // const request = new Request(posturl);
+            // const header = new Headers();
+            // header.append("Authorization", "Bearer " + token);
+            // header.append('Content-Type', 'multipart/form-data');
+
+            PostData.append('name', this.state.playlistName);
+            PostData.append('description', this.state.playlistDescription);
+
+            console.log(PostData);
 
             //Patch user data
             axios
-            .post(url, 
-                {
-                    formData
-                },  { headers: { 
-                        Accept: 'application/json',
-                        'Content-Type': 'multipart/form-data;',
-                        Authorization: 'Bearer ' + token 
-                }, },)
-            .then(async response => {
+            .post(posturl, 
+                { PostData },  
+                { headers: { Authorization: 'Bearer '+token }, },)
+            .then(response => {
                 console.log(response);
                 //If response ok then do following
-                if (response.status === 200) {
+                if (response.status === 201) {
                     //set successMsg to true
                     this.setState({ successMsg: true });
                     //After 1 second redirect to home page
@@ -92,8 +100,8 @@ export default class CreatePlaylist extends Component {
                 }
             })
             //else log error
-            .catch(error => {
-                console.log("error " + error);
+            .catch((error) => {
+                console.log(error);
             });
 
             this.setState({
@@ -103,8 +111,6 @@ export default class CreatePlaylist extends Component {
                 playlistNameError: '',
                 playlistDescriptionError: '',
             })
-    
-            //this.props.closeModal();
         }
     }
     
@@ -247,9 +253,6 @@ const styles = StyleSheet.create({
     },
     chooseImage: {
         flexDirection: 'row',
-    },
-    imagePath: {
-
     },
     buttonImage: {
         width: 80,
