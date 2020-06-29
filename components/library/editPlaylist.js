@@ -9,7 +9,7 @@ import ImagePicker from 'react-native-image-picker';
 
 var deviceWidth = Dimensions.get('window').width;
 var deviceHeigh = Dimensions.get('window').height;
-const postData = new FormData();
+let postData = new FormData();
 
 export default class EditPlaylist extends Component {
     constructor(props) {
@@ -89,36 +89,46 @@ export default class EditPlaylist extends Component {
         });
     }
 
-    async editUserPlaylist() {
+    editUserPlaylist = async () => {
 
         const isValid = this.validate();
 
-        if(isValid) {
-            //Variable that holds JWT token found in storage
-            var token = await AsyncStorage.getItem('Token');
-            //Variable that holds user id found in storage
-            var userID = await AsyncStorage.getItem('ID');
-            var url = "http://api.music-mix.live/playlists/"+this.props.playlistID+"/users/"+userID+"";
-            
-            postData.append('name', this.state.playlistName);
-            postData.append('description', this.state.playlistDescription)
-            const postImage = {uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRHWeon8rqu8w-5myvOF4BCM35ZJwjWKHYkEw&usqp=CAU', type: 'image/jpeg', name: 'playlistImage.jpg'};
-            postData.append('image', this.state.playlistImage)
+        //Variable that holds JWT token found in storage
+        var token = await AsyncStorage.getItem('Token');
+        //Variable that holds user id found in storage
+        var userID = await AsyncStorage.getItem('ID');
+        var url = "http://api.music-mix.live/playlists/"+this.props.playlistID+"/users/"+userID;
 
-
+        const createFormData = (image, body) => {
             const data = new FormData();
+          
+            data.append("image", {
+              name: image.fileName,
+              type: image.type,
+              uri:
+                Platform.OS === "android" ? image.uri : image.uri.replace("file://", "")
+            });
+          
+            Object.keys(body).forEach(key => {
+              data.append(key, body[key]);
+            });
+          
+            return data;
+        };
 
-            Object.keys(postImage).forEach((key) => {
-                data.append(key, postImage[key])
+        postData.append('name', this.state.playlistName);
+        postData.append('description', this.state.playlistDescription)
+        postData.append('image', {uri: 'file:/'+this.state.playlistImage.path, type: this.state.playlistImage.type, name: this.state.playlistImage.fileName});
+
+        if(isValid) {
+
+            fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: "Bearer " + token
+                },
+                body: createFormData(this.state.playlistImage, {name: this.state.playlistName, description: this.state.playlistDescription})
             })
-
-            //Update user playlist
-            axios
-            .patch(url, 
-                { 
-                    data
-                },  
-                { headers: {  'Content-Type': 'multipart/form-data', Authorization: 'Bearer '+token }, },)
             .then(response => {
                 console.log(response);
                 //If response ok then do following
@@ -133,8 +143,32 @@ export default class EditPlaylist extends Component {
             })
             //else log error
             .catch(error => {
-                console.log("error " + error);
-            });            
+                console.log(error);
+            }); 
+
+            // //Update user playlist
+            // await axios
+            // .patch(url, 
+            //     { 
+            //         postData
+            //     },  
+            //     { headers: { Authorization: 'Bearer '+token }, },)
+            // .then(response => {
+            //     console.log(response);
+            //     //If response ok then do following
+            //     if (response.status === 200) {
+            //         this.setState({successMsg: true});
+
+            //         setTimeout(() => {
+            //             this.setState({successMsg: false})
+            //         }, 1000)
+
+            //     }
+            // })
+            // //else log error
+            // .catch(error => {
+            //     console.log("error " + error);
+            // });            
         }
     }
 
@@ -217,7 +251,7 @@ export default class EditPlaylist extends Component {
 
                                 <View style={styles.butonContainer}>
                                     <TouchableOpacity style={styles.buttonCreate} onPress={() => this.editUserPlaylist()}>
-                                        <Text style={styles.buttonText}>Create</Text>
+                                        <Text style={styles.buttonText}>Update</Text>
                                     </TouchableOpacity>
                                 </View>
 
